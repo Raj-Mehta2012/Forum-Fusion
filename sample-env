@@ -1,0 +1,6 @@
+#Rename this to .env from sample-env
+#Replace the variable values with your actual values
+
+CONFLUENT_CLUSTER= XXXXXXXXX.us-west2.gcp.confluent.cloud:9092
+CONFLUENT_KEY= XXXXXXXXX
+CONFLUENT_SECRET= XXXXXXXXXXXXXXXXXXXXXXXXXXXX
