@@ -1,9 +1,9 @@
 import streamlit as st
-from kafka import KafkaConsumer
 import json
 from dotenv import load_dotenv
 import os
-from confluent_kafka import admin
+from confluent_kafka import Consumer, KafkaError
+import json
 
 # Load environment variables from .env file
 load_dotenv()
@@ -18,34 +18,43 @@ props = {
     'security.protocol': 'SASL_SSL',
     'sasl.mechanism': 'PLAIN',
     'sasl.username': api_key,
-    'sasl.password': api_secret
+    'sasl.password': api_secret,
+    'group.id': 'chat-group',
+    'auto.offset.reset': 'earliest'
 }
 
-# Create a Kafka admin client
-admin_client = admin.AdminClient(props)
-
-# Get the cluster metadata
-cluster_metadata = admin_client.list_topics(timeout=10)
-
-# # Extract the broker addresses
-# broker_addresses = [node.split(':')[0] for broker in cluster_metadata.brokers]
 
 # Create a Kafka consumer
-consumer = KafkaConsumer('chat-topic',
-                         bootstrap_servers=bootstrap,
-                         auto_offset_reset='earliest',
-                         enable_auto_commit=True,
-                         value_deserializer=lambda m: json.loads(m.decode('utf-8')))
+consumer = Consumer(props)
+
+# Subscribe to the chat topic
+topic = 'chat-topic'
+consumer.subscribe([topic])
 
 # Function to print received messages
 def print_message(message):
-    print(f"Received message: {message['message']}")
+    value = message.value().decode('utf-8')
+    message_data = json.loads(value)
+    print(f"Received message: {message_data['message']}")
 
 # Consume messages from Kafka
 print("Listening for messages...")
-for message in consumer:
-    message_data = message.value
-    print_message(message_data)
+try:
+    while True:
+        msg = consumer.poll(timeout=1.0)
+        if msg is None:
+            continue
+        if msg.error():
+            if msg.error().code() == KafkaError._PARTITION_EOF:
+                continue
+            else:
+                print(f"Error: {msg.error()}")
+        else:
+            print_message(msg)
 
-# Clean up the consumer
-consumer.close()
+except KeyboardInterrupt:
+    pass
+
+finally:
+    # Clean up the consumer
+    consumer.close()
