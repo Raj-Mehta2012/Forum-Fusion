@@ -1,39 +1,42 @@
-# Use the official Python image as a parent image
-FROM python:3.9-slim
+# # Use the official Python image
+# FROM --platform=linux/amd64 python:3.8-slim as base
 
-# Set the working directory to /app
-WORKDIR /app
+# # Set the working directory
+# WORKDIR /app
 
-# Copy the requirements file into the container
-COPY requirements.txt .
+# # Copy the requirements file and install dependencies
+# COPY requirements.txt .
+# RUN pip install --no-cache-dir -r requirements.txt
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# # Copy the application code
+# COPY . .
 
-# Copy the entire application directory into the container
-COPY . .
+# # Make port 8501 available to the world outside this container
+# EXPOSE 8501
 
-# Make port 8501 available to the world outside this container
-EXPOSE 8501
+# # Set environment variables from .env file
+# ENV $(cat .env | xargs)
+
+# # Run the Streamlit app
+# CMD ["streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=$PORT"]
+
+
+FROM python:3.7
+
+# Expose port you want your app on
+EXPOSE 8080
+
+# Upgrade pip and install requirements
+COPY requirements.txt requirements.txt
+RUN pip install -U pip
+RUN pip install -r requirements.txt
+
+# Copy app code and set working directory
+COPY app.py app.py
 
 # Set environment variables from .env file
 ENV $(cat .env | xargs)
 
-# Run the Streamlit app
-CMD ["streamlit", "run", "app.py"]
-
-# FROM python:3.8-slim
-
-# WORKDIR /app
-
-# ENV HOST 0.0.0.0
-
-# COPY . /app
-# COPY .env /app/.env
-
-# RUN pip install --no-cache-dir -r requirements.txt
-# RUN chmod +x app.py 
-
-# EXPOSE 8501
-
-# CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.enableCORS=false"]
+# Run
+ENTRYPOINT ["streamlit", "run", "app.py", "–server.port=8080", "–server.address=0.0.0.0”]
+# CMD ["streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=$PORT"]

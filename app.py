@@ -4,6 +4,8 @@ from confluent_kafka.admin import AdminClient, NewTopic
 import streamlit as st
 from dotenv import load_dotenv
 
+PORT = int(os.environ.get('PORT', 8080))
+
 # Load environment variables
 load_dotenv()
 
@@ -108,4 +110,5 @@ elif topic:
         consumer = kafka_consumer([topic])
         messages = consume_messages(consumer)
         st.write("Messages in topic:", messages)
+
 
