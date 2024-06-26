@@ -28,11 +28,26 @@ Forum Fusion is designed to provide a Reddit-like live chat experience with real
 
 ## Architecture Diagram
 
-graph LR
-    A[Producer (Streamlit)] -->|Messages| B[Apache Kafka Cluster (GCP)]
-    B -->|Messages| C[Consumer (Real-time chat view)]
-    D[Docker Container] -->|Contains| E[Producer and Consumer Apps]
-    E -->|Deploy| F[Google Kubernetes Engine (GCP)]
+    +-----------------+         +---------------------+
+    |  Producer       |         |                     |
+    |  (Streamlit)    +-------->|  Apache Kafka       |
+    |                 |         |  Cluster (GCP)      |
+    +-----------------+         |                     |
+                                +---------+-----------+
+                                          |
+                                          |
+                                +---------v-----------+
+                                |    Consumer         |
+                                |  (Real-time chat    |
+                                |   view)             |
+                                +---------------------+
+                                
+    +-----------------+         +---------------------+
+    |  Docker         |         |                     |
+    |  Container      +-------->|  Google Kubernetes  |
+    |                 |         |  Engine (GCP)       |
+    +-----------------+         +---------------------+
+
 
 ## Building the Producer
 
